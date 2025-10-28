@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Gauge, Phone } from "lucide-react";
 
 interface Car {
-  id: number;
+  id: string;
   name: string;
   brand: string;
   model: string;
@@ -14,6 +14,8 @@ interface Car {
   image: string;
   mileage: string;
 }
+
+const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&q=80";
 
 interface CarCardProps {
   car: Car;
@@ -29,9 +31,12 @@ const CarCard = ({ car }: CarCardProps) => {
     <Card className="group overflow-hidden shadow-card hover:shadow-hover transition-smooth cursor-pointer">
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         <img
-          src={car.image}
+          src={car.image || DEFAULT_IMAGE}
           alt={car.name}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+          onError={(e) => {
+            e.currentTarget.src = DEFAULT_IMAGE;
+          }}
         />
         <Badge className="absolute top-3 right-3 bg-primary text-primary-foreground">
           {car.category}

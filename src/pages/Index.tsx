@@ -1,12 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import CarCard from "@/components/CarCard";
 import FilterSidebar from "@/components/FilterSidebar";
-import { carsData } from "@/data/cars";
 import { Button } from "@/components/ui/button";
-import { Phone } from "lucide-react";
+import { Phone, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
+  const [cars, setCars] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+  
   const [filters, setFilters] = useState({
     name: "",
     category: "all",
@@ -17,6 +22,30 @@ const Index = () => {
     priceMin: "",
     priceMax: "",
   });
+
+  useEffect(() => {
+    loadCars();
+  }, []);
+
+  const loadCars = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("cars")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setCars(data || []);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao carregar veículos",
+        description: error.message,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -35,7 +64,7 @@ const Index = () => {
     });
   };
 
-  const filteredCars = carsData.filter((car) => {
+  const filteredCars = cars.filter((car) => {
     if (filters.name && !car.name.toLowerCase().includes(filters.name.toLowerCase())) {
       return false;
     }
@@ -106,10 +135,14 @@ const Index = () => {
               </h2>
             </div>
 
-            {filteredCars.length > 0 ? (
+            {loading ? (
+              <div className="flex justify-center py-16">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : filteredCars.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {filteredCars.map((car) => (
-                  <CarCard key={car.id} car={car} />
+                  <CarCard key={car.id} car={{...car, image: car.image_url}} />
                 ))}
               </div>
             ) : (

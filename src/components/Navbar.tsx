@@ -1,9 +1,17 @@
 import { Link, useLocation } from "react-router-dom";
-import { Car, Phone } from "lucide-react";
+import { Car, Phone, User, LogOut, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const location = useLocation();
+  const { user, isAdmin, signOut } = useAuth();
   
   const isActive = (path: string) => location.pathname === path;
   
@@ -41,10 +49,40 @@ const Navbar = () => {
             ))}
           </div>
 
-          <Button onClick={handleWhatsApp} className="flex items-center gap-2">
-            <Phone className="h-4 w-4" />
-            <span className="hidden sm:inline">WhatsApp</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button onClick={handleWhatsApp} variant="ghost" className="flex items-center gap-2">
+              <Phone className="h-4 w-4" />
+              <span className="hidden sm:inline">WhatsApp</span>
+            </Button>
+
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <User className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-card z-50">
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin" className="flex items-center gap-2 cursor-pointer">
+                        <Shield className="h-4 w-4" />
+                        Admin
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={signOut} className="cursor-pointer">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sair
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button asChild>
+                <Link to="/auth">Entrar</Link>
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Mobile menu */}
