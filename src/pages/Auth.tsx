@@ -43,7 +43,14 @@ const Auth = () => {
     setLoading(true);
     try {
       await signIn(loginEmail, loginPassword);
-      navigate("/");
+      // Check if user is admin to redirect accordingly
+      const { data } = await (await import("@/integrations/supabase/client")).supabase
+        .from("user_roles")
+        .select("role")
+        .eq("role", "admin")
+        .maybeSingle();
+      
+      navigate(data ? "/admin" : "/");
     } catch (error) {
       // Error is handled in AuthContext
     } finally {
